@@ -12,7 +12,6 @@ import { Button } from './button';
 import { useActionState, useEffect } from 'react';
 import { createUser } from '@/app/lib/actions';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function SignupForm() {
     const router = useRouter();

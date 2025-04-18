@@ -79,7 +79,6 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
 
     const { customerId, amount, status } = validatedFields.data;
     const amountInCents = amount * 100;
-    const date = new Date().toISOString().split('T')[0];
 
     try {
         await sql`
@@ -129,7 +128,6 @@ const SignupSchema = z.object({
 });
 
 export async function createUser(prevState: any, formData: FormData) {
-    // Add password confirmation to validation
     const validatedFields = SignupSchema.safeParse({
         name: formData.get('name'),
         email: formData.get('email'),
