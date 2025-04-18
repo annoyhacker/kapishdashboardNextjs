@@ -72,7 +72,7 @@ export default function LoginForm() {
           Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
         <div className="mt-6 text-sm">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-blue-500">
             Sign up
           </Link>
