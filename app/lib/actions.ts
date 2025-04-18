@@ -17,8 +17,8 @@ export type InvoiceState = {
     message?: string | null;
 };
 
-type UserState = {
-    success?: boolean;
+export type UserState = {  // Add 'export' keyword
+    success: boolean;
     message?: string;
     errors?: Record<string, string[]>;
 };
