@@ -1,32 +1,19 @@
 import type { NextAuthConfig } from 'next-auth';
 
-export const authConfig = {
+export const authConfig: NextAuthConfig = {
     pages: {
         signIn: '/login',
-        newUser: '/signup',
+        error: '/login',
     },
     callbacks: {
-        authorized({ auth, request: { nextUrl } }) {
+        authorized({ auth, request }) {
             const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+            const isOnDashboard = request.nextUrl.pathname.startsWith('/dashboard');
 
-            const isPublicPage = nextUrl.pathname === '/login' || nextUrl.pathname === '/signup';
-
-            if (isPublicPage) {
-                if (isLoggedIn && isOnDashboard) {
-                    return Response.redirect(new URL('/dashboard', nextUrl));
-                }
-                return true;
-            }
-
-            if (isOnDashboard) {
-                return isLoggedIn; // Redirect unauthenticated users to login page
-            }
-
-            return false; // Default deny
+            // Simplified return statement
+            return isOnDashboard ? isLoggedIn : true;
         },
     },
-    providers: [],
-
-} satisfies NextAuthConfig;
-
+    // Add providers array to satisfy type requirements
+    providers: []
+};

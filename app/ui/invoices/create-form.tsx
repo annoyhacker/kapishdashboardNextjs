@@ -1,5 +1,5 @@
 'use client';
-import { useActionState } from 'react';
+import { useFormState } from 'react-dom';
 import { CustomerField } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
@@ -12,11 +12,11 @@ import { Button } from '@/app/ui/button';
 import { createInvoice, InvoiceState } from '@/app/lib/actions';
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
-  const initialState: InvoiceState = { message: null, errors: {} }; // Updated type name
-  const [state, formAction] = useActionState(createInvoice, initialState);
+  const initialState: InvoiceState = { message: null, errors: {} };
+  const [state, dispatch] = useFormState(createInvoice, initialState);
 
   return (
-    <form action={formAction}>
+    <form action={dispatch}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Customer Name */}
         <div className="mb-4">
@@ -44,7 +44,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
           </div>
           <div id="customer-error" aria-live="polite" aria-atomic="true">
             {state.errors?.customerId &&
-              state.errors.customerId.map((error: string) => (
+              state.errors.customerId.map((error) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>
@@ -73,7 +73,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
           </div>
           <div id="amount-error" aria-live="polite" aria-atomic="true">
             {state.errors?.amount &&
-              state.errors.amount.map((error: string) => (
+              state.errors.amount.map((error) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>
@@ -113,7 +113,6 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                   className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
                   aria-describedby="status-error"
                 />
-
                 <label
                   htmlFor="paid"
                   className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
@@ -124,7 +123,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
             </div>
             <div id="status-error" aria-live="polite" aria-atomic="true">
               {state.errors?.status &&
-                state.errors.status.map((error: string) => (
+                state.errors.status.map((error) => (
                   <p className="mt-2 text-sm text-red-500" key={error}>
                     {error}
                   </p>
@@ -132,7 +131,15 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
             </div>
           </div>
         </fieldset>
+
+        {/* Form-level error message */}
+        {state.message && (
+          <div className="mt-4 text-red-500" aria-live="polite">
+            {state.message}
+          </div>
+        )}
       </div>
+
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/invoices"

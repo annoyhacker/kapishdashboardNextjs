@@ -7,18 +7,22 @@ import {
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { authenticate } from '@/app/lib/actions';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const [errorMessage, formAction, isPending] = useActionState(
-    authenticate,
-    undefined,
-  );
+  const [state, formAction] = useActionState(authenticate, undefined);
+
+  useEffect(() => {
+    if (state?.success) {
+      router.push(callbackUrl);
+    }
+  }, [state, router, callbackUrl]);
 
   return (
     <form action={formAction} className="space-y-3">
@@ -27,11 +31,9 @@ export default function LoginForm() {
           Please log in to continue.
         </h1>
         <div className="w-full">
+          {/* Email Input */}
           <div>
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="email"
-            >
+            <label className="mb-3 mt-5 block text-xs font-medium text-gray-900" htmlFor="email">
               Email
             </label>
             <div className="relative">
@@ -46,11 +48,10 @@ export default function LoginForm() {
               <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
           </div>
+
+          {/* Password Input */}
           <div className="mt-4">
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="password"
-            >
+            <label className="mb-3 mt-5 block text-xs font-medium text-gray-900" htmlFor="password">
               Password
             </label>
             <div className="relative">
@@ -67,24 +68,25 @@ export default function LoginForm() {
             </div>
           </div>
         </div>
+
         <input type="hidden" name="redirectTo" value={callbackUrl} />
-        <Button className="mt-4 w-full" aria-disabled={isPending}>
+        <Button className="mt-4 w-full" aria-disabled={state?.success}>
           Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
+
         <div className="mt-6 text-sm">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-blue-500">
             Sign up
           </Link>
         </div>
-        <div className="flex h-8 items-end space-x-1">
-          {errorMessage && (
-            <>
-              <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">{errorMessage}</p>
-            </>
-          )}
-        </div>
+
+        {state?.message && !state?.success && (
+          <div className="flex h-8 items-end space-x-1 mt-4">
+            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+            <p className="text-sm text-red-500">{state.message}</p>
+          </div>
+        )}
       </div>
     </form>
   );
