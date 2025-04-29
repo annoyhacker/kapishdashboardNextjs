@@ -5,23 +5,14 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-interface Props {
-    params: {
-        id: string;
-    };
-}
-
-export default async function Page({ params }: Props) {
-    const id = params.id;
-
-    // Validate ID
-    if (!id || typeof id !== 'string') {
-        return notFound();
-    }
-
+export default async function Page({
+    params
+}: {
+    params: { id: string } // Keep inline type definition
+}) {
     try {
         const [invoice, customers] = await Promise.all([
-            fetchInvoiceById(id),
+            fetchInvoiceById(params.id),
             fetchCustomers(),
         ]);
 
@@ -34,7 +25,7 @@ export default async function Page({ params }: Props) {
                         { label: 'Invoices', href: '/dashboard/invoices' },
                         {
                             label: 'Edit Invoice',
-                            href: `/dashboard/invoices/${id}/edit`, // FIXED: Use backticks (`)
+                            href: `/dashboard/invoices/${params.id}/edit`,
                             active: true,
                         },
                     ]}
