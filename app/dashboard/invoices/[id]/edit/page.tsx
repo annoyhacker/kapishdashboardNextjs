@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-// Add this type declaration
+// Add explicit type for params
 type PageParams = {
     id: string
 }
