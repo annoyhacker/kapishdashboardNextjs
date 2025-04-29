@@ -8,14 +8,18 @@ import {
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import { createUser, UserState } from '@/app/lib/actions';
 import { useRouter } from 'next/navigation';
 
 export default function SignupForm() {
     const router = useRouter();
+    const [clientError, setClientError] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isPending, startTransition] = useTransition();
 
-    const [state, formAction, isPending] = useActionState<UserState, FormData>(
+    const [state, formAction] = useActionState<UserState, FormData>(
         createUser,
         {
             success: false,
@@ -30,8 +34,25 @@ export default function SignupForm() {
         }
     }, [state, router]);
 
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        // Client-side validation
+        if (password !== confirmPassword) {
+            setClientError('Passwords do not match');
+            return;
+        }
+
+        setClientError('');
+        const formData = new FormData(e.currentTarget);
+
+        startTransition(() => {
+            formAction(formData);
+        });
+    };
+
     return (
-        <form action={formAction} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
                 <h1 className={`${lusitana.className} mb-3 text-2xl`}>
                     Create an account
@@ -112,6 +133,8 @@ export default function SignupForm() {
                                 placeholder="Enter password"
                                 required
                                 minLength={6}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 aria-describedby="password-error"
                             />
                             <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -142,11 +165,16 @@ export default function SignupForm() {
                                 placeholder="Confirm password"
                                 required
                                 minLength={6}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 aria-describedby="confirmPassword-error"
                             />
                             <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                         </div>
                         <div id="confirmPassword-error" aria-live="polite" aria-atomic="true">
+                            {clientError && (
+                                <p className="mt-2 text-sm text-red-500">{clientError}</p>
+                            )}
                             {state?.errors?.confirmPassword?.map((error: string) => (
                                 <p className="mt-2 text-sm text-red-500" key={error}>
                                     {error}
@@ -155,8 +183,24 @@ export default function SignupForm() {
                         </div>
                     </div>
 
-                    <Button className="mt-6 w-full" aria-disabled={isPending}>
-                        Create Account <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+                    <Button
+                        className="mt-6 w-full relative"
+                        disabled={isPending}
+                        aria-disabled={isPending}
+                    >
+                        {isPending ? (
+                            <>
+                                <span>Creating Account...</span>
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                Create Account
+                                <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+                            </>
+                        )}
                     </Button>
 
                     {/* General Error Messages */}
