@@ -34,7 +34,7 @@ export default async function Page({ params }: Props) {
                         { label: 'Invoices', href: '/dashboard/invoices' },
                         {
                             label: 'Edit Invoice',
-                            href: `/dashboard/invoices/${id}/edit`,
+                            href: `/dashboard/invoices/${id}/edit`, // FIXED: Use backticks (`)
                             active: true,
                         },
                     ]}
