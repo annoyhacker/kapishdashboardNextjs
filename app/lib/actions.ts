@@ -1,4 +1,5 @@
 'use server';
+
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
@@ -7,7 +8,9 @@ import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcryptjs';
 
-// Type Definitions
+/* ------------------------------------
+   Type Definitions
+------------------------------------ */
 export type InvoiceState = {
     errors?: {
         customerId?: string[];
@@ -23,32 +26,38 @@ export type UserState = {
     errors?: Record<string, string[]>;
 };
 
-// Schemas
+/* ------------------------------------
+   Schema Definitions
+------------------------------------ */
 const FormSchema = z.object({
     id: z.string(),
     customerId: z.string({
         invalid_type_error: 'Please select a customer.',
     }),
-    amount: z.coerce
-        .number()
-        .gt(0, { message: 'Please enter an amount greater than $0.' }),
+    amount: z.coerce.number().gt(0, {
+        message: 'Please enter an amount greater than $0.',
+    }),
     status: z.enum(['pending', 'paid'], {
         invalid_type_error: 'Please select an invoice status.',
     }),
     date: z.string(),
 });
 
-const SignupSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"]
-});
+const SignupSchema = z
+    .object({
+        name: z.string().min(1, 'Name is required'),
+        email: z.string().email('Invalid email address'),
+        password: z.string().min(6, 'Password must be at least 6 characters'),
+        confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords don't match",
+        path: ['confirmPassword'],
+    });
 
-// Invoice Actions
+/* ------------------------------------
+   Invoice Actions
+------------------------------------ */
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(
@@ -74,9 +83,9 @@ export async function createInvoice(
 
     try {
         await sql`
-            INSERT INTO invoices (customer_id, amount, status, date)
-            VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-        `;
+      INSERT INTO invoices (customer_id, amount, status, date)
+      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+    `;
 
         revalidatePath('/dashboard/invoices');
         redirect('/dashboard/invoices');
@@ -84,10 +93,9 @@ export async function createInvoice(
         console.error('Database Error:', error);
         return {
             message: 'Database Error: Failed to Create Invoice.',
-            errors: {}
+            errors: {},
         };
     }
-    // The redirect() call will throw an exception to exit the function
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
@@ -115,10 +123,10 @@ export async function updateInvoice(
 
     try {
         await sql`
-            UPDATE invoices
-            SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-            WHERE id = ${id}
-        `;
+      UPDATE invoices
+      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+      WHERE id = ${id}
+    `;
 
         revalidatePath('/dashboard/invoices');
         redirect('/dashboard/invoices');
@@ -126,7 +134,7 @@ export async function updateInvoice(
         console.error('Database Error:', error);
         return {
             message: 'Database Error: Failed to Update Invoice.',
-            errors: {}
+            errors: {},
         };
     }
 }
@@ -141,10 +149,12 @@ export async function deleteInvoice(id: string): Promise<void> {
     }
 }
 
-// Auth Actions
+/* ------------------------------------
+   Auth Actions
+------------------------------------ */
 export async function authenticate(
     prevState: UserState | undefined,
-    formData: FormData,
+    formData: FormData
 ): Promise<UserState> {
     try {
         await signIn('credentials', {
@@ -159,25 +169,27 @@ export async function authenticate(
                     return {
                         success: false,
                         message: 'Invalid credentials.',
-                        errors: {}
+                        errors: {},
                     };
                 default:
                     return {
                         success: false,
                         message: 'Something went wrong.',
-                        errors: {}
+                        errors: {},
                     };
             }
         }
         return {
             success: false,
             message: 'An unexpected error occurred.',
-            errors: {}
+            errors: {},
         };
     }
 }
 
-// User Actions
+/* ------------------------------------
+   User Registration
+------------------------------------ */
 export async function createUser(
     prevState: UserState,
     formData: FormData
@@ -193,7 +205,7 @@ export async function createUser(
         return {
             success: false,
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Validation failed'
+            message: 'Validation failed',
         };
     }
 
@@ -202,32 +214,32 @@ export async function createUser(
 
     try {
         const existingUser = await sql`
-            SELECT email FROM users WHERE email = ${email}
-        `;
+      SELECT email FROM users WHERE email = ${email}
+    `;
 
         if (existingUser.rows.length > 0) {
             return {
                 success: false,
                 errors: { email: ['Email address already exists.'] },
-                message: 'Email already registered'
+                message: 'Email already registered',
             };
         }
 
         await sql`
-            INSERT INTO users (name, email, password)
-            VALUES (${name}, ${email}, ${hashedPassword})
-        `;
+      INSERT INTO users (name, email, password)
+      VALUES (${name}, ${email}, ${hashedPassword})
+    `;
 
         return {
             success: true,
-            message: 'Account created successfully! Redirecting to login...'
+            message: 'Account created successfully! Redirecting to login...',
         };
     } catch (error) {
         console.error('Database Error:', error);
         return {
             success: false,
             message: 'Database error: Failed to create account.',
-            errors: {}
+            errors: {},
         };
     }
 }

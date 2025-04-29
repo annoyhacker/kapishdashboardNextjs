@@ -9,8 +9,8 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { updateInvoice, InvoiceState } from '@/app/lib/actions'; // Fixed import
-import { useActionState } from 'react';
+import { updateInvoice } from '@/app/lib/actions';
+import { useFormState, useFormStatus } from 'react-dom';
 
 export default function EditInvoiceForm({
   invoice,
@@ -19,9 +19,11 @@ export default function EditInvoiceForm({
   invoice: InvoiceForm;
   customers: CustomerField[];
 }) {
-  const initialState: InvoiceState = { message: null, errors: {} }; // Fixed type
   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
-  const [state, formAction] = useActionState(updateInvoiceWithId, initialState);
+  const [state, formAction] = useFormState(updateInvoiceWithId, {
+    message: null,
+    errors: {},
+  });
 
   return (
     <form action={formAction}>
@@ -142,6 +144,13 @@ export default function EditInvoiceForm({
             </div>
           </div>
         </fieldset>
+
+        {/* Form-level error message */}
+        {state.message && (
+          <div className="mt-4 text-sm text-red-500" aria-live="polite">
+            {state.message}
+          </div>
+        )}
       </div>
       <div className="mt-6 flex justify-end gap-4">
         <Link
@@ -150,8 +159,18 @@ export default function EditInvoiceForm({
         >
           Cancel
         </Link>
-        <Button type="submit">Edit Invoice</Button>
+        <SubmitButton />
       </div>
     </form>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" aria-disabled={pending}>
+      {pending ? 'Saving...' : 'Edit Invoice'}
+    </Button>
   );
 }
