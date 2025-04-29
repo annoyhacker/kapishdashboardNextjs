@@ -1,5 +1,3 @@
-
-
 import Form from '@/app/ui/invoices/edit-form';
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
@@ -7,18 +5,17 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-// Define the expected shape of route parameters
-type PageProps = {
+interface Props {
     params: {
         id: string;
     };
-};
+}
 
-export default async function Page({ params }: PageProps) {
-    const { id } = params;
+export default async function Page({ params }: Props) {
+    const id = params.id;
 
-    // Validate id
-    if (typeof id !== 'string') {
+    // Validate ID
+    if (!id || typeof id !== 'string') {
         return notFound();
     }
 
