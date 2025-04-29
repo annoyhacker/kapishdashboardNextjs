@@ -5,11 +5,12 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page({
-    params
-}: {
-    params: { id: string } // Keep inline type definition
-}) {
+// Add this type declaration
+type PageParams = {
+    id: string
+}
+
+export default async function Page({ params }: { params: PageParams }) {
     try {
         const [invoice, customers] = await Promise.all([
             fetchInvoiceById(params.id),
