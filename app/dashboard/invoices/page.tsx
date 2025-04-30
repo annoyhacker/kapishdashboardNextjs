@@ -10,16 +10,16 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-interface PageProps {
+export default async function Page({
+    searchParams,
+}: {
     searchParams?: {
         query?: string;
         page?: string;
     };
-}
-
-export default async function Page(props: PageProps) {
-    const query = props.searchParams?.query || '';
-    const currentPage = Number(props.searchParams?.page) || 1;
+}) {
+    const query = searchParams?.query || '';
+    const currentPage = Number(searchParams?.page) || 1;
 
     try {
         const totalPages = await fetchInvoicesPages(query);
@@ -44,8 +44,6 @@ export default async function Page(props: PageProps) {
                     fallback={<InvoicesTableSkeleton />}
                 >
                     <Table query={query} currentPage={currentPage} />
-
-
                 </Suspense>
 
                 <div className="mt-5 flex w-full justify-center">
