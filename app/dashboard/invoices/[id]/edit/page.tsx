@@ -5,8 +5,13 @@ import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 
 // export default async function Page() {
-export default async function Page({ params }: { params: { id: string } }) {
-    const id = params.id;
+export default async function Page({
+    params, // ✅ Next.js automatically provides this
+}: {
+    params: { id: string }; // Remove the Promise wrapper
+}) {
+    const { id } = params; // No need to "await" - it's already an object
+
     const [invoice, customers] = await Promise.all([
         fetchInvoiceById(id),
         fetchCustomers(),
