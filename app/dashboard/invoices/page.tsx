@@ -11,15 +11,17 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default async function Page({
+    // Next.js now passes searchParams as a Promise
     searchParams,
 }: {
-    searchParams?: {
+    searchParams: Promise<{
         query?: string;
         page?: string;
-    };
+    }>;
 }) {
-    const query = searchParams?.query || '';
-    const currentPage = Number(searchParams?.page) || 1;
+    // await the resolved searchParams object
+    const { query = '', page = '1' } = await searchParams;
+    const currentPage = Number(page);
 
     try {
         const totalPages = await fetchInvoicesPages(query);
