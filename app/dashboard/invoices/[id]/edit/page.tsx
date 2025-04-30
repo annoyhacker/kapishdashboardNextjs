@@ -4,11 +4,13 @@ import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 
 export default async function Page({
+    // Declare params as a Promise here:
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
-    const { id } = params;
+    // Await it before destructuring:
+    const { id } = await params;
 
     const [invoice, customers] = await Promise.all([
         fetchInvoiceById(id),
@@ -16,7 +18,7 @@ export default async function Page({
     ]);
 
     if (!invoice) {
-        notFound();
+        return notFound();
     }
 
     return (
