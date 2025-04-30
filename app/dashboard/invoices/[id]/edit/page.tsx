@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 interface PageProps {
     params: {
-        id: any;
+        id: string;
     };
 }
 
