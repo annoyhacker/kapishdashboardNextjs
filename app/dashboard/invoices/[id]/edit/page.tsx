@@ -5,38 +5,35 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-interface PageProps {
-    params: {
-        id: string;
-    };
-}
 
-export default async function Page({ params }: PageProps) {
-    try {
-        const [invoice, customers] = await Promise.all([
-            fetchInvoiceById(params.id),
-            fetchCustomers(),
-        ]);
 
-        if (!invoice) return notFound();
+export default async function Page({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const { id } = await params;
 
-        return (
-            <main>
-                <Breadcrumbs
-                    breadcrumbs={[
-                        { label: 'Invoices', href: '/dashboard/invoices' },
-                        {
-                            label: 'Edit Invoice',
-                            href: `/dashboard/invoices/${params.id}/edit`,
-                            active: true,
-                        },
-                    ]}
-                />
-                <Form invoice={invoice} customers={customers} />
-            </main>
-        );
-    } catch (error) {
-        console.error('Edit page error:', error);
-        return notFound();
-    }
-}
+    const [invoice, customers] = await Promise.all([
+        fetchInvoiceById(id),
+        fetchCustomers(),
+    ]);
+
+    if (!invoice) return notFound();
+
+    return (
+        <main>
+            <Breadcrumbs
+                breadcrumbs={[
+                    { label: 'Invoices', href: '/dashboard/invoices' },
+                    {
+                        label: 'Edit Invoice',
+                        href: `/dashboard/invoices/${id}/edit`,
+                        active: true,
+                    },
+                ]}
+            />
+            <Form invoice={invoice} customers={customers} />
+        </main>
+    );
+} 
