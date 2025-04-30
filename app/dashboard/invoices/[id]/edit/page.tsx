@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function Page({
     params,
 }: Readonly<{
-    params: { id: any };
+    params: { id: string };
 }>) {
     try {
         const [invoice, customers] = await Promise.all([
