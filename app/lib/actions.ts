@@ -83,9 +83,9 @@ export async function createInvoice(
 
     try {
         await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `;
+            INSERT INTO invoices (customer_id, amount, status, date)
+            VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+        `;
 
         revalidatePath('/dashboard/invoices');
         redirect('/dashboard/invoices');
@@ -123,10 +123,10 @@ export async function updateInvoice(
 
     try {
         await sql`
-      UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-      WHERE id = ${id}
-    `;
+            UPDATE invoices
+            SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+            WHERE id = ${id}
+        `;
 
         revalidatePath('/dashboard/invoices');
         redirect('/dashboard/invoices');
@@ -164,21 +164,21 @@ export async function authenticate(
         return { success: true };
     } catch (error) {
         if (error instanceof AuthError) {
-            switch (error.type) {
-                case 'CredentialsSignin':
-                    return {
-                        success: false,
-                        message: 'Invalid credentials.',
-                        errors: {},
-                    };
-                default:
-                    return {
-                        success: false,
-                        message: 'Something went wrong.',
-                        errors: {},
-                    };
+            if (error.name === 'CredentialsSignin') {
+                return {
+                    success: false,
+                    message: 'Invalid credentials.',
+                    errors: {},
+                };
             }
+
+            return {
+                success: false,
+                message: 'Authentication failed.',
+                errors: {},
+            };
         }
+
         return {
             success: false,
             message: 'An unexpected error occurred.',
@@ -214,8 +214,8 @@ export async function createUser(
 
     try {
         const existingUser = await sql`
-      SELECT email FROM users WHERE email = ${email}
-    `;
+            SELECT email FROM users WHERE email = ${email}
+        `;
 
         if (existingUser.rows.length > 0) {
             return {
@@ -226,9 +226,9 @@ export async function createUser(
         }
 
         await sql`
-      INSERT INTO users (name, email, password)
-      VALUES (${name}, ${email}, ${hashedPassword})
-    `;
+            INSERT INTO users (name, email, password)
+            VALUES (${name}, ${email}, ${hashedPassword})
+        `;
 
         return {
             success: true,
