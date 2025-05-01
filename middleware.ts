@@ -1,9 +1,13 @@
-import NextAuth from 'next-auth';
-import { authConfig } from './auth.config';
+// middleware.ts
 
-export default NextAuth(authConfig).auth;
+import { withAuth } from "next-auth/middleware";
+import { authConfig } from "./auth.config";
 
+export default withAuth(authConfig);
+
+// Force Node.js runtime (allows dynamic code in NextAuth)
 export const config = {
-    // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+    runtime: "nodejs",
+    // match everything except api, next internals, images, etc.
+    matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };
