@@ -4,8 +4,6 @@ import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { signIn } from '@/auth';
-import { AuthError } from 'next-auth';
 import bcrypt from 'bcryptjs';
 
 /* ------------------------------------
@@ -83,9 +81,9 @@ export async function createInvoice(
 
     try {
         await sql`
-            INSERT INTO invoices (customer_id, amount, status, date)
-            VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-        `;
+      INSERT INTO invoices (customer_id, amount, status, date)
+      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+    `;
 
         revalidatePath('/dashboard/invoices');
         redirect('/dashboard/invoices');
@@ -123,10 +121,10 @@ export async function updateInvoice(
 
     try {
         await sql`
-            UPDATE invoices
-            SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-            WHERE id = ${id}
-        `;
+      UPDATE invoices
+      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+      WHERE id = ${id}
+    `;
 
         revalidatePath('/dashboard/invoices');
         redirect('/dashboard/invoices');
@@ -156,29 +154,46 @@ export async function authenticate(
     prevState: UserState | undefined,
     formData: FormData
 ): Promise<UserState> {
-    try {
-        await signIn('credentials', {
-            ...Object.fromEntries(formData),
-            redirect: false,
-        });
-        return { success: true };
-    } catch (error) {
-        if (error instanceof AuthError) {
-            if (error.name === 'CredentialsSignin') {
-                return {
-                    success: false,
-                    message: 'Invalid credentials.',
-                    errors: {},
-                };
-            }
+    const email = formData.get('email')?.toString();
+    const password = formData.get('password')?.toString();
 
+    if (!email || !password) {
+        return {
+            success: false,
+            message: 'Email and password are required.',
+            errors: {},
+        };
+    }
+
+    try {
+        const result = await sql`
+      SELECT * FROM users WHERE email = ${email}
+    `;
+
+        const user = result.rows[0];
+
+        if (!user) {
             return {
                 success: false,
-                message: 'Authentication failed.',
+                message: 'No user found with this email.',
                 errors: {},
             };
         }
 
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return {
+                success: false,
+                message: 'Incorrect password.',
+                errors: {},
+            };
+        }
+
+        // NOTE: This just validates credentials, does not create a session
+        return { success: true };
+    } catch (e) {
+        console.error('Auth Check Error:', e);
         return {
             success: false,
             message: 'An unexpected error occurred.',
@@ -214,8 +229,8 @@ export async function createUser(
 
     try {
         const existingUser = await sql`
-            SELECT email FROM users WHERE email = ${email}
-        `;
+      SELECT email FROM users WHERE email = ${email}
+    `;
 
         if (existingUser.rows.length > 0) {
             return {
@@ -226,9 +241,9 @@ export async function createUser(
         }
 
         await sql`
-            INSERT INTO users (name, email, password)
-            VALUES (${name}, ${email}, ${hashedPassword})
-        `;
+      INSERT INTO users (name, email, password)
+      VALUES (${name}, ${email}, ${hashedPassword})
+    `;
 
         return {
             success: true,

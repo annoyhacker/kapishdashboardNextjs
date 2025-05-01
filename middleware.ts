@@ -1,9 +1,11 @@
-import NextAuth from 'next-auth';
-import { authConfig } from './auth.config';
+import type { NextConfig } from 'next';
 
-export default NextAuth(authConfig).auth;
-
-export const config = {
-    // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+const nextConfig: NextConfig = {
+    experimental: {
+        // Allow middleware to run under Node.js instead of the Edge runtime
+        nodeMiddleware: true,
+    },
+    // …any other config options
 };
+
+export default nextConfig;
