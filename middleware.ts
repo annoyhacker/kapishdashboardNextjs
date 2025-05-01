@@ -1,13 +1,18 @@
 // middleware.ts
 
 import { withAuth } from "next-auth/middleware";
-import { authConfig } from "./auth.config";
 
-export default withAuth(authConfig);
+export default withAuth({
+    // ONLY middleware options go here:
+    callbacks: {
+        authorized({ token }) {
+            // return `true` to allow, `false` to block
+            return !!token; // only allow if there's a valid session token
+        },
+    },
+});
 
-// Force Node.js runtime (allows dynamic code in NextAuth)
 export const config = {
-    runtime: "nodejs",
-    // match everything except api, next internals, images, etc.
+    runtime: "nodejs",    // so dynamic eval is OK
     matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };
